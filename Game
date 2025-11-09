@@ -1,37 +1,42 @@
-using UnityEngine;
+from ursina import *
 
-public class PlayerController : MonoBehaviour
-{
-    public float speed = 5f;
-    public float rotationSpeed = 700f;
-    public Animator animator;
-    public Rigidbody rb;
+app = Ursina()
 
-    void Start()
-    {
-        animator = GetComponent<Animator>();
-        rb = GetComponent<Rigidbody>();
-    }
+# Create a basic 3D player entity (cube)
+player = Entity(
+    model='cube',
+    color=color.orange,
+    scale=(1, 1, 1),
+    position=(0, 1, 0)
+)
 
-    void Update()
-    {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+# Ground
+ground = Entity(
+    model='plane',
+    scale=(10, 1, 10),
+    texture='white_cube',
+    color=color.gray,
+    collider='box'
+)
 
-        Vector3 movement = new Vector3(h, 0, v).normalized;
+camera.position = (0, 10, -20)
+camera.rotation_x = 30
 
-        if (movement.magnitude > 0.1f)
-        {
-            animator.SetBool("isRunning", true);
+def update():
+    speed = 5 * time.dt
+    rotate_speed = 100 * time.dt
+    
+    if held_keys['left arrow']:
+        player.x -= speed
+        player.rotation_y += rotate_speed
+    if held_keys['right arrow']:
+        player.x += speed
+        player.rotation_y -= rotate_speed
+    if held_keys['up arrow']:
+        player.z += speed
+        player.rotation_x += rotate_speed
+    if held_keys['down arrow']:
+        player.z -= speed
+        player.rotation_x -= rotate_speed
 
-            Quaternion lookRotation = Quaternion.LookRotation(movement);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
-
-            rb.MovePosition(transform.position + movement * speed * Time.deltaTime);
-        }
-        else
-        {
-            animator.SetBool("isRunning", false);
-        }
-    }
-}
+app.run()
